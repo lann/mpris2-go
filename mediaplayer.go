@@ -3,7 +3,10 @@ package mpris2
 import (
 	"fmt"
 	"strings"
+	"github.com/guelfey/go.dbus"
 )
+
+// http://specifications.freedesktop.org/mpris-spec/latest/
 
 const (
 	mprisPath          = "/org/mpris/MediaPlayer2"
@@ -15,67 +18,32 @@ const (
 )
 
 type MediaPlayer struct {
-	conn   *Connection
-	root   *Interface
-	player *Interface
+	root   *Object
+	player *Object
 }
 
-func (conn *Connection) GetMediaPlayer(objectName string) (mp *MediaPlayer, err error) {
-	obj, err := conn.getObject(objectName, mprisPath)
-	if err != nil {
-		return
+func (conn *Conn) GetMediaPlayer(objectName string) *MediaPlayer {
+	return &MediaPlayer{
+		root:   conn.getObject(objectName, mprisPath, rootInterface),
+		player: conn.getObject(objectName, mprisPath, playerInterface),
 	}
-
-	root, err := obj.getInterface(rootInterface)
-	if err != nil {
-		return
-	}
-	
-	player, err := obj.getInterface(playerInterface)
-	if err != nil {
-		return
-	}
-	
-	mp = &MediaPlayer{conn: conn, root: root, player: player}
-	return
 }
 
-func (conn *Connection) ListMediaPlayers() (names []string, err error) {
-	obj, err := conn.getObject(dbusObject, dbusPath)
+func (conn *Conn) ListMediaPlayers() (names []string, err error) {
+	allNames, err := conn.ListNames()
 	if err != nil {
 		return
 	}
 
-	iface, err := obj.getInterface(dbusInterface)
-	if err != nil {
-		return
-	}
-
-	out, err := iface.call(listMethod)
-	if err != nil {
-		return
-	}
-
-	items, ok := out[0].([]interface{})
-	if !ok {
-		err = fmt.Errorf("unexpected return value %v", items)
-		return
-	}
-
-	for _, item := range items {
-		name, ok := item.(string)
-		if !ok {
-			err = fmt.Errorf("unexpected return value %v", item)
-			return
-		}
-		
+	for _, name := range allNames {
 		if strings.HasPrefix(name, mprisPrefix) {
 			names = append(names, name)
 		}
 	}
 	return
 }
-func (conn *Connection) GetFirstMediaPlayer() (*MediaPlayer, error) {
+
+func (conn *Conn) GetFirstMediaPlayer() (*MediaPlayer, error) {
 	names, err := conn.ListMediaPlayers()
 	if err != nil {
 		return nil, err
@@ -85,7 +53,7 @@ func (conn *Connection) GetFirstMediaPlayer() (*MediaPlayer, error) {
 		return nil, fmt.Errorf("No media players found")
 	}
 	
-	return conn.GetMediaPlayer(names[0])
+	return conn.GetMediaPlayer(names[0]), nil
 }
 
 // root methods
@@ -152,8 +120,9 @@ func (mp *MediaPlayer) PlaybackStatus() (string, error) {
 	return mp.player.getString("PlaybackStatus")
 }
 
-func (mp *MediaPlayer) Metadata() ([]interface{}, error) {
-	return mp.player.getProp("Metadata")
+func (mp *MediaPlayer) Metadata() (data dbus.Variant, err error) {
+	err = mp.player.getProp("Metadata").Store(&data)
+	return
 }
 
 func (mp *MediaPlayer) CanGoNext() (bool, error) {
