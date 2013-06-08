@@ -24,28 +24,28 @@ func (conn *Conn) ListNames() (names []string, err error) {
 	return
 }
 
-type Object struct {
+type object struct {
 	*dbus.Object
 	interfaceName string
 }
 
-func (conn *Conn) getObject(name, path, interfaceName string) *Object {
-	return &Object{conn.Object(name, dbus.ObjectPath(path)), interfaceName}
+func (conn *Conn) getObject(name, path, interfaceName string) *object {
+	return &object{conn.Object(name, dbus.ObjectPath(path)), interfaceName}
 }
 
-func (obj *Object) call(method string, args ...interface{}) *dbus.Call {
+func (obj *object) call(method string, args ...interface{}) *dbus.Call {
 	return obj.Call(fmt.Sprintf("%s.%s", obj.interfaceName, method), 0, args...)
 }
 
-func (obj *Object) callVoid(method string, args ...interface{}) error {
+func (obj *object) callVoid(method string, args ...interface{}) error {
 	return obj.call(method, args...).Store()
 }
 	
-func (obj *Object) getProp(name string) *dbus.Call {
+func (obj *object) getProp(name string) *dbus.Call {
 	return obj.Call("org.freedesktop.DBus.Properties.Get", 0, obj.interfaceName, name)
 }
 
-func (obj *Object) getValue(name string, kind reflect.Kind) (value reflect.Value, err error) {
+func (obj *object) getValue(name string, kind reflect.Kind) (value reflect.Value, err error) {
 	var data dbus.Variant
 	err = obj.getProp(name).Store(&data)
 	if err == nil {
@@ -57,7 +57,7 @@ func (obj *Object) getValue(name string, kind reflect.Kind) (value reflect.Value
 	return
 }
 
-func (obj *Object) getBool(name string) (result bool, err error) {
+func (obj *object) getBool(name string) (result bool, err error) {
 	value, err := obj.getValue(name, reflect.Bool)
 	if err == nil {
 		result = value.Bool()
@@ -65,7 +65,7 @@ func (obj *Object) getBool(name string) (result bool, err error) {
 	return
 }
 
-func (obj *Object) getInt64(name string) (result int64, err error) {
+func (obj *object) getInt64(name string) (result int64, err error) {
 	value, err := obj.getValue(name, reflect.Int64)
 	if err == nil {
 		result = value.Int()
@@ -73,7 +73,7 @@ func (obj *Object) getInt64(name string) (result int64, err error) {
 	return
 }
 
-func (obj *Object) getString(name string) (result string, err error) {
+func (obj *object) getString(name string) (result string, err error) {
 	value, err := obj.getValue(name, reflect.String)
 	if err == nil {
 		result = value.String()
@@ -81,7 +81,7 @@ func (obj *Object) getString(name string) (result string, err error) {
 	return
 }
 
-func (obj *Object) getStringArray(name string) (results []string, err error) {
+func (obj *object) getStringArray(name string) (results []string, err error) {
 	value, err := obj.getValue(name, reflect.Slice)
 	if err == nil {
 		var ok bool
@@ -93,7 +93,7 @@ func (obj *Object) getStringArray(name string) (results []string, err error) {
 	return
 }
 
-func (obj *Object) getStringMap(name string) (results map[string]interface{}, err error) {
+func (obj *object) getStringMap(name string) (results map[string]interface{}, err error) {
 	value, err := obj.getValue(name, reflect.Map)
 	if err == nil {
 		data, ok := value.Interface().(map[string]dbus.Variant)

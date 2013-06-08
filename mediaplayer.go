@@ -17,8 +17,8 @@ const (
 )
 
 type MediaPlayer struct {
-	root   *Object
-	player *Object
+	root   *object
+	player *object
 }
 
 func (conn *Conn) GetMediaPlayer(objectName string) *MediaPlayer {
