@@ -13,7 +13,7 @@ import "github.com/lann/mpris2"
 
 conn, err := mpris2.Connect() // Connect to DBus
 
-mp, err := conn.GetFirstMediaPlayer()
+mp, err := conn.GetAnyMediaPlayer()
 
 err = mp.Play()
 

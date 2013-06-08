@@ -46,7 +46,7 @@ func (conn *Conn) ListMediaPlayers() (names []string, err error) {
 	return
 }
 
-func (conn *Conn) GetFirstMediaPlayer() (*MediaPlayer, error) {
+func (conn *Conn) GetAnyMediaPlayer() (*MediaPlayer, error) {
 	names, err := conn.ListMediaPlayers()
 	if err != nil {
 		return nil, err
