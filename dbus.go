@@ -2,6 +2,7 @@ package mpris2
 
 import (
 	"fmt"
+	"reflect"
 	"github.com/guelfey/go.dbus"
 )
 
@@ -44,37 +45,58 @@ func (obj *Object) getProp(name string) *dbus.Call {
 	return obj.Call("org.freedesktop.DBus.Properties.Get", 0, obj.interfaceName, name)
 }
 
+func (obj *Object) getValue(name string, kind reflect.Kind) (value reflect.Value, err error) {
+	var data dbus.Variant
+	err = obj.getProp(name).Store(&data)
+	if err == nil {
+		value = reflect.ValueOf(data.Value())
+		if value.Kind() != kind {
+			err = fmt.Errorf("wrong kind %s, expected %s", value.Kind(), kind)
+		}
+	}
+	return
+}
+
 func (obj *Object) getBool(name string) (result bool, err error) {
-	err = obj.getProp(name).Store(&result)
+	value, err := obj.getValue(name, reflect.Bool)
+	if err == nil {
+		result = value.Bool()
+	}
 	return
 }
 
 func (obj *Object) getString(name string) (result string, err error) {
-	err = obj.getProp(name).Store(&result)
+	value, err := obj.getValue(name, reflect.String)
+	if err == nil {
+		result = value.String()
+	}
 	return
 }
 
 func (obj *Object) getStringArray(name string) (results []string, err error) {
-	err = obj.getProp(name).Store(&results)
+	value, err := obj.getValue(name, reflect.Slice)
+	if err == nil {
+		var ok bool
+		results, ok = value.Interface().([]string)
+		if !ok {
+			err = fmt.Errorf("unexpected type %s", value.Type())
+		}
+	}
 	return
 }
 
 func (obj *Object) getStringMap(name string) (results map[string]interface{}, err error) {
-	var data dbus.Variant
-	err = obj.getProp(name).Store(&data)
-	if err != nil {
-		return
-	}
-	if sig := data.Signature().String(); sig != "a{sv}" {
-		err = fmt.Errorf("Unexpected result signature %s", sig)
-		return
-	}
+	value, err := obj.getValue(name, reflect.Map)
+	if err == nil {
+		data, ok := value.Interface().(map[string]dbus.Variant)
+		if !ok {
+			err = fmt.Errorf("unexpected type %s", value.Type())
+		}
 
-	results = make(map[string]interface{})
-	
-	for k, v := range data.Value().(map[string]dbus.Variant) {
-		results[k] = v.Value()
+		results = make(map[string]interface{})
+		for k, v := range data {
+			results[k] = v.Value()
+		}
 	}
-	
 	return
 }

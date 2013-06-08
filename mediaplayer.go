@@ -55,7 +55,7 @@ func (conn *Conn) GetFirstMediaPlayer() (*MediaPlayer, error) {
 	return conn.GetMediaPlayer(names[0]), nil
 }
 
-// root methods
+// root
 
 func (mp *MediaPlayer) Raise() error {
 	return mp.root.callVoid("Raise")
@@ -77,6 +77,10 @@ func (mp *MediaPlayer) Identity() (string, error) {
 	return mp.root.getString("Identity")
 }
 
+func (mp *MediaPlayer) DesktopEntry() (string, error) {
+	return mp.root.getString("DesktopEntry")
+}
+
 func (mp *MediaPlayer) SupportedUriSchemes() ([]string, error) {
 	return mp.root.getStringArray("SupportedUriSchemes")
 }
@@ -85,7 +89,7 @@ func (mp *MediaPlayer) SupportedMimeTypes() ([]string, error) {
 	return mp.root.getStringArray("SupportedMimeTypes")
 }
 
-// player methods
+// player
 
 func (mp *MediaPlayer) Next() error {
 	return mp.player.callVoid("Next")
@@ -139,6 +143,8 @@ func (mp *MediaPlayer) CanControl() (bool, error) {
 	return mp.player.getBool("CanControl")
 }
 
+// metadata
+
 type Metadata map[string]interface{}
 
 func (mp *MediaPlayer) Metadata() (Metadata, error) {
@@ -189,3 +195,4 @@ func (data Metadata) Url() string {
 	val, _ := data["xesam:url"].(string)
 	return val
 }
+
