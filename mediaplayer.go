@@ -22,6 +22,10 @@ type MediaPlayer struct {
 }
 
 func (conn *Conn) GetMediaPlayer(objectName string) *MediaPlayer {
+	if !strings.ContainsRune(objectName, '.') {
+		objectName = fmt.Sprint(mprisPrefix, ".", objectName)
+	}
+	
 	return &MediaPlayer{
 		root:   conn.getObject(objectName, mprisPath, rootInterface),
 		player: conn.getObject(objectName, mprisPath, playerInterface),
