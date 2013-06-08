@@ -33,7 +33,7 @@ func (conn *Conn) GetMediaPlayer(objectName string) *MediaPlayer {
 }
 
 func (conn *Conn) ListMediaPlayers() (names []string, err error) {
-	allNames, err := conn.ListNames()
+	allNames, err := conn.listNames()
 	if err != nil {
 		return
 	}

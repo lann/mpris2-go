@@ -19,7 +19,7 @@ func Connect() (*Conn, error) {
 	return &Conn{conn}, nil
 }
 
-func (conn *Conn) ListNames() (names []string, err error) {
+func (conn *Conn) listNames() (names []string, err error) {
 	err = conn.BusObject().Call("org.freedesktop.DBus.ListNames", 0).Store(&names)
 	return
 }
