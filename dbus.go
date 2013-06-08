@@ -59,3 +59,22 @@ func (obj *Object) getStringArray(name string) (results []string, err error) {
 	return
 }
 
+func (obj *Object) getStringMap(name string) (results map[string]interface{}, err error) {
+	var data dbus.Variant
+	err = obj.getProp(name).Store(&data)
+	if err != nil {
+		return
+	}
+	if sig := data.Signature().String(); sig != "a{sv}" {
+		err = fmt.Errorf("Unexpected result signature %s", sig)
+		return
+	}
+
+	results = make(map[string]interface{})
+	
+	for k, v := range data.Value().(map[string]dbus.Variant) {
+		results[k] = v.Value()
+	}
+	
+	return
+}
