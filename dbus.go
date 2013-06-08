@@ -65,6 +65,14 @@ func (obj *Object) getBool(name string) (result bool, err error) {
 	return
 }
 
+func (obj *Object) getInt64(name string) (result int64, err error) {
+	value, err := obj.getValue(name, reflect.Int64)
+	if err == nil {
+		result = value.Int()
+	}
+	return
+}
+
 func (obj *Object) getString(name string) (result string, err error) {
 	value, err := obj.getValue(name, reflect.String)
 	if err == nil {

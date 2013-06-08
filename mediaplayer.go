@@ -115,12 +115,20 @@ func (mp *MediaPlayer) Play() error {
 	return mp.player.callVoid("Play")
 }
 
+func (mp *MediaPlayer) Seek(offset int64) error {
+	return mp.player.callVoid("Seek", offset)
+}
+
 func (mp *MediaPlayer) OpenUri(uri string) error {
 	return mp.player.callVoid("OpenUri", uri)
 }
 
 func (mp *MediaPlayer) PlaybackStatus() (string, error) {
 	return mp.player.getString("PlaybackStatus")
+}
+
+func (mp *MediaPlayer) Position() (int64, error) {
+	return mp.player.getInt64("Position")
 }
 
 func (mp *MediaPlayer) CanGoNext() (bool, error) {
